@@ -1,0 +1,11 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root-password
+      MYSQL_DATABASE: wanted_pre_onboarding_backend
+      MYSQL_USER: newbie
+      MYSQL_PASSWORD: newbie-password
+    ports: # @TODO 서버 앱도 docker-compose 로 띄우면 해당 설정 삭제
+      - 3306:3306
