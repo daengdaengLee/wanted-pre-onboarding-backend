@@ -1,4 +1,4 @@
-package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter;
+package io.github.daengdaenglee.wantedpreonboardingbackend.auth;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

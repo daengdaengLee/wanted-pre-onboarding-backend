@@ -1,6 +1,6 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter.outbound;
 
-import io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter.JwtConfig;
+import io.github.daengdaenglee.wantedpreonboardingbackend.auth.JwtConfig;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.EncodeJwtOutboundPort;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

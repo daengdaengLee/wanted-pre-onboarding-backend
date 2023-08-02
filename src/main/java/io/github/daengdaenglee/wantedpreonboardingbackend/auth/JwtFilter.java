@@ -1,4 +1,4 @@
-package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter;
+package io.github.daengdaenglee.wantedpreonboardingbackend.auth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
