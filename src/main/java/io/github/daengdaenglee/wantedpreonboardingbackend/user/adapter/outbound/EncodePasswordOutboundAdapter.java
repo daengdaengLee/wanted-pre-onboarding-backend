@@ -2,9 +2,9 @@ package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter.outbound
 
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.EncodePasswordOutboundPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class EncodePasswordOutboundAdapter implements EncodePasswordOutboundPort {
 
     private final PasswordEncoder passwordEncoder;
