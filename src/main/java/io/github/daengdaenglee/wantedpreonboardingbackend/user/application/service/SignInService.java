@@ -2,11 +2,10 @@ package io.github.daengdaenglee.wantedpreonboardingbackend.user.application.serv
 
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignInInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.UserOutputDto;
+import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.CheckPasswordOutboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.EncodeJwtOutboundPort;
-import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.EncodePasswordOutboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.UserRepository;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.domain.Email;
-import io.github.daengdaenglee.wantedpreonboardingbackend.user.domain.EncodedPassword;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.domain.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,7 @@ import java.util.Date;
 @Service
 public class SignInService implements SignInInboundPort {
 
-    private final EncodePasswordOutboundPort encodePasswordOutboundPort;
+    private final CheckPasswordOutboundPort checkPasswordOutboundPort;
 
     private final EncodeJwtOutboundPort encodeJwtOutboundPort;
 
@@ -26,10 +25,10 @@ public class SignInService implements SignInInboundPort {
     private final Logger logger = LoggerFactory.getLogger(SignUpService.class);
 
     public SignInService(
-            EncodePasswordOutboundPort encodePasswordOutboundPort,
+            CheckPasswordOutboundPort checkPasswordOutboundPort,
             EncodeJwtOutboundPort encodeJwtOutboundPort,
             UserRepository userRepository) {
-        this.encodePasswordOutboundPort = encodePasswordOutboundPort;
+        this.checkPasswordOutboundPort = checkPasswordOutboundPort;
         this.encodeJwtOutboundPort = encodeJwtOutboundPort;
         this.userRepository = userRepository;
     }
@@ -60,10 +59,8 @@ public class SignInService implements SignInInboundPort {
             throw new RuntimeException("잘못된 비밀번호입니다.");
         }
         var password = passwordResult.right();
-        var encodedPassword = new EncodedPassword(
-                this.encodePasswordOutboundPort.encode(password.password()));
 
-        if (!user.checkPassword(encodedPassword.password())) {
+        if (!this.checkPasswordOutboundPort.check(password.password(), user.password())) {
             // @TODO
             throw new RuntimeException("잘못된 비밀번호입니다.");
         }
