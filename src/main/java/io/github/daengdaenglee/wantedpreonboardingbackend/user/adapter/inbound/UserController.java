@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("users")
 public class UserController {
 
-    public record SignUpInputDto(String email, String password) {
+    public record AuthInputDto(String email, String password) {
     }
 
     public record UserOutputDto(Long id, String email) {
@@ -19,7 +19,15 @@ public class UserController {
     }
 
     @PostMapping("sign-up")
-    public SignUpOutputDto signUp(@RequestBody SignUpInputDto signUpInputDto) {
+    public SignUpOutputDto signUp(@RequestBody AuthInputDto authInputDto) {
+        throw new RuntimeException("not implemented");
+    }
+
+    public record SignInOutputDto(UserOutputDto user, String token) {
+    }
+
+    @PostMapping("sign-in")
+    public SignInOutputDto signIn(@RequestBody AuthInputDto authInputDto) {
         throw new RuntimeException("not implemented");
     }
 
