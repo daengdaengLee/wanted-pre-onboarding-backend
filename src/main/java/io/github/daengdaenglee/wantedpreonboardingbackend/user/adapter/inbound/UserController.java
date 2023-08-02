@@ -1,5 +1,6 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter.inbound;
 
+import io.github.daengdaenglee.wantedpreonboardingbackend.common.SimpleApiException;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignInInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignUpInboundPort;
 import org.slf4j.Logger;
@@ -42,19 +43,14 @@ public class UserController {
         var signUpOutputDtoResult = this.signUpInboundPort.signUp(signUpInputDto);
         if (signUpOutputDtoResult.isLeft()) {
             var errorCode = signUpOutputDtoResult.left();
-            if (errorCode == SignUpInboundPort.ErrorCode.ILLEGAL_EMAIL_NO_AT) {
-                // @TODO
-                throw new RuntimeException(HttpStatus.BAD_REQUEST.name());
+            if (errorCode == SignUpInboundPort.ErrorCode.ILLEGAL_EMAIL_NO_AT ||
+                    errorCode == SignUpInboundPort.ErrorCode.ILLEGAL_PASSWORD_TOO_SHORT) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, errorCode.message());
             } else if (errorCode == SignUpInboundPort.ErrorCode.ILLEGAL_EMAIL_DUPLICATED) {
-                // @TODO
-                throw new RuntimeException(HttpStatus.CONFLICT.name());
-            } else if (errorCode == SignUpInboundPort.ErrorCode.ILLEGAL_PASSWORD_TOO_SHORT) {
-                // @TODO
-                throw new RuntimeException(HttpStatus.BAD_REQUEST.name());
+                throw new SimpleApiException(HttpStatus.CONFLICT, errorCode.message());
             }
             this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
-            // @TODO
-            throw new RuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.name());
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
         }
         var signUpOutputDto = signUpOutputDtoResult.right();
         return new SignUpOutputDto(new UserOutputDto(signUpOutputDto.id(), signUpOutputDto.email()));
