@@ -1,5 +1,8 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.post.adapter.inbound;
 
+import io.github.daengdaenglee.wantedpreonboardingbackend.auth.Auth;
+import io.github.daengdaenglee.wantedpreonboardingbackend.common.SimpleApiException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +33,12 @@ public class PostController {
     public CreatePostOutputDto createPost(
             @RequestBody CreatePostInputDto createPostInputDto,
             Authentication authentication) {
+        var authResult = Auth.create(authentication);
+        if (authResult.isEmpty()) {
+            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        var auth = authResult.get();
+
         throw new RuntimeException("not implemented");
     }
 
