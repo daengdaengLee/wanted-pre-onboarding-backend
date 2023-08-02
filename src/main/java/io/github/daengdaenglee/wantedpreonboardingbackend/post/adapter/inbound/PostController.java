@@ -4,6 +4,7 @@ import io.github.daengdaenglee.wantedpreonboardingbackend.auth.Auth;
 import io.github.daengdaenglee.wantedpreonboardingbackend.common.SimpleApiException;
 import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.AuthorizeInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.CreatePostDto;
+import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.CreatePostInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.UserDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -18,10 +19,14 @@ public class PostController {
 
     private final AuthorizeInboundPort authorizeInboundPort;
 
+    private final CreatePostInboundPort createPostInboundPort;
+
     public PostController(
-            AuthorizeInboundPort authorizeInboundPort
+            AuthorizeInboundPort authorizeInboundPort,
+            CreatePostInboundPort createPostInboundPort
     ) {
         this.authorizeInboundPort = authorizeInboundPort;
+        this.createPostInboundPort = createPostInboundPort;
     }
 
     public record AuthorDto(String id) {
@@ -69,7 +74,12 @@ public class PostController {
             throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
         }
 
-        throw new RuntimeException("not implemented");
+        var post = this.createPostInboundPort.createPost(createPostDto);
+        return new CreatePostOutputDto(new PostOutputDto(
+                post.id().toString(),
+                post.title(),
+                post.content(),
+                new AuthorDto(post.author().id().toString())));
     }
 
 }
