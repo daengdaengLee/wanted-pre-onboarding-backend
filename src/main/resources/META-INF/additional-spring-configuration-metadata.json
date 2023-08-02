@@ -1,0 +1,20 @@
+{
+  "properties": [
+    {
+      "name": "jwt.header",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "jwt.prefix",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "jwt.validityInSec",
+      "type": "java.lang.Integer"
+    }
+  ]
+}
