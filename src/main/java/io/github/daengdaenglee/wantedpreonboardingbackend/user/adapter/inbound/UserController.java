@@ -1,5 +1,6 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.user.adapter.inbound;
 
+import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignInInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignUpInboundPort;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,8 +13,13 @@ public class UserController {
 
     private final SignUpInboundPort signUpInboundPort;
 
-    public UserController(SignUpInboundPort signUpInboundPort) {
+    private final SignInInboundPort signInInboundPort;
+
+    public UserController(
+            SignUpInboundPort signUpInboundPort,
+            SignInInboundPort signInInboundPort) {
         this.signUpInboundPort = signUpInboundPort;
+        this.signInInboundPort = signInInboundPort;
     }
 
     public record AuthInputDto(String email, String password) {
@@ -37,7 +43,13 @@ public class UserController {
 
     @PostMapping("sign-in")
     public SignInOutputDto signIn(@RequestBody AuthInputDto authInputDto) {
-        throw new RuntimeException("not implemented");
+        var signInInputDto = new SignInInboundPort.InputDto(authInputDto.email(), authInputDto.password());
+        var signInOutputDto = this.signInInboundPort.signIn(signInInputDto);
+        return new SignInOutputDto(
+                new UserOutputDto(
+                        signInOutputDto.user().id(),
+                        signInOutputDto.user().email()),
+                signInOutputDto.token());
     }
 
 }
