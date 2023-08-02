@@ -1,5 +1,7 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.auth;
 
+import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.ReadUserInboundPort;
+import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.UserOutputDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -27,10 +29,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final String secret;
 
-    public JwtFilter(JwtConfig jwtConfig) {
+    private final ReadUserInboundPort readUserInboundPort;
+
+    public JwtFilter(JwtConfig jwtConfig, ReadUserInboundPort readUserInboundPort) {
         this.header = jwtConfig.header();
         this.prefix = jwtConfig.prefix();
         this.secret = jwtConfig.secret();
+        this.readUserInboundPort = readUserInboundPort;
     }
 
     @Override
@@ -38,11 +43,15 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        this.getToken(request).flatMap(this::decodeJwt).ifPresent(userId -> {
-            var authentication = UsernamePasswordAuthenticationToken.authenticated(userId, null, null);
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        });
+        this.getToken(request)
+                .flatMap(this::decodeJwt)
+                .flatMap(this::checkUser)
+                .ifPresent(userId -> {
+                    var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                            userId, null, null);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                });
         filterChain.doFilter(request, response);
     }
 
@@ -72,6 +81,11 @@ public class JwtFilter extends OncePerRequestFilter {
         } catch (Exception ex) {
             return Optional.empty();
         }
+    }
+
+    private Optional<Long> checkUser(Long userId) {
+        return this.readUserInboundPort.readUser(new ReadUserInboundPort.InputDto(userId))
+                .map(UserOutputDto::id);
     }
 
 }
