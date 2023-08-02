@@ -32,4 +32,8 @@ public class User {
         return this.email;
     }
 
+    public boolean checkPassword(String password) {
+        return this.password.equals(password);
+    }
+
 }
