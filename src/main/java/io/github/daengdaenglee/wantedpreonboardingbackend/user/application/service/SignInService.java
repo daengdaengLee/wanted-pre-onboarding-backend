@@ -1,5 +1,6 @@
 package io.github.daengdaenglee.wantedpreonboardingbackend.user.application.service;
 
+import io.github.daengdaenglee.wantedpreonboardingbackend.common.Either;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.SignInInboundPort;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.inbound.UserOutputDto;
 import io.github.daengdaenglee.wantedpreonboardingbackend.user.application.outbound.CheckPasswordOutboundPort;
@@ -34,11 +35,13 @@ public class SignInService implements SignInInboundPort {
     }
 
     @Override
-    public OutputDto signIn(InputDto inputDto) {
+    public Either<ErrorCode, OutputDto> signIn(InputDto inputDto) {
         var emailResult = Email.create(inputDto.email());
         if (emailResult.isLeft()) {
             var errorCode = emailResult.left();
-            // @TODO
+            if (errorCode == Email.ErrorCode.NO_AT) {
+                return new Either.Left<>(ErrorCode.ILLEGAL_EMAIL_NO_AT);
+            }
             this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
             throw new RuntimeException("잘못된 이메일 주소입니다.");
         }
@@ -46,28 +49,28 @@ public class SignInService implements SignInInboundPort {
 
         var userResult = this.userRepository.findByEmail(email.email());
         if (userResult.isEmpty()) {
-            // @TODO
-            throw new RuntimeException("가입하지 않은 이메일 주소입니다.");
+            return new Either.Left<>(ErrorCode.ILLEGAL_EMAIL_NOT_SIGNED_UP);
         }
         var user = userResult.get();
 
         var passwordResult = Password.create(inputDto.password());
         if (passwordResult.isLeft()) {
             var errorCode = passwordResult.left();
-            // @TODO
+            if (errorCode == Password.ErrorCode.TOO_SHORT) {
+                return new Either.Left<>(ErrorCode.ILLEGAL_PASSWORD_TOO_SHORT);
+            }
             this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
             throw new RuntimeException("잘못된 비밀번호입니다.");
         }
         var password = passwordResult.right();
 
         if (!this.checkPasswordOutboundPort.check(password.password(), user.password())) {
-            // @TODO
-            throw new RuntimeException("잘못된 비밀번호입니다.");
+            return new Either.Left<>(ErrorCode.ILLEGAL_PASSWORD_WRONG);
         }
 
         var token = this.encodeJwtOutboundPort.encode(
                 new EncodeJwtOutboundPort.InputDto(user.id(), new Date()));
-        return new OutputDto(new UserOutputDto(user.id(), user.email()), token);
+        return new Either.Right<>(new OutputDto(new UserOutputDto(user.id(), user.email()), token));
     }
 
 }

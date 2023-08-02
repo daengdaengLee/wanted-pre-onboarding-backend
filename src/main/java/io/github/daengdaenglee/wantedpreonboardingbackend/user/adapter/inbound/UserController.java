@@ -62,7 +62,20 @@ public class UserController {
     @PostMapping("sign-in")
     public SignInOutputDto signIn(@RequestBody AuthInputDto authInputDto) {
         var signInInputDto = new SignInInboundPort.InputDto(authInputDto.email(), authInputDto.password());
-        var signInOutputDto = this.signInInboundPort.signIn(signInInputDto);
+        var signInOutputDtoResult = this.signInInboundPort.signIn(signInInputDto);
+        if (signInOutputDtoResult.isLeft()) {
+            var errorCode = signInOutputDtoResult.left();
+            if (errorCode == SignInInboundPort.ErrorCode.ILLEGAL_EMAIL_NO_AT ||
+                    errorCode == SignInInboundPort.ErrorCode.ILLEGAL_PASSWORD_TOO_SHORT) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, errorCode.message());
+            } else if (errorCode == SignInInboundPort.ErrorCode.ILLEGAL_EMAIL_NOT_SIGNED_UP ||
+                    errorCode == SignInInboundPort.ErrorCode.ILLEGAL_PASSWORD_WRONG) {
+                throw new SimpleApiException(HttpStatus.UNAUTHORIZED, errorCode.message());
+            }
+            this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
+        }
+        var signInOutputDto = signInOutputDtoResult.right();
         return new SignInOutputDto(
                 new UserOutputDto(
                         signInOutputDto.user().id(),
