@@ -1,0 +1,5 @@
+jwt:
+  header: Authorization
+  prefix: "Bearer "
+  secret: oG3EJM4-vAB7TkZSIkM3qKJK6fvlMpdjkFXtzf68LXz_kz8rT0u5PedgTOTQpELNmjFxKKI-W4Xv4fGdXRQ6kQ
+  validityInSec: 604800

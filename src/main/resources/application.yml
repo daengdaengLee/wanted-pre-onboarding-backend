@@ -1,27 +1,7 @@
-# @TODO profile 별 설정 분리
 spring:
-  # @TODO ddl 관련 옵션, sql logging 관련 옵션은 local profile 에서만 활성화
-  jpa:
-    hibernate:
-      ddl-auto: create-drop # @TODO profile 분리할 때 기본 설정 validate 로
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    generate-ddl: true
-  datasource:
-    url: jdbc:mysql://localhost:3306/wanted_pre_onboarding_backend?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: newbie
-    password: newbie-password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-# @TODO local profile 에만
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.type: trace
-
-jwt:
-  header: Authorization
-  prefix: "Bearer "
-  secret: oG3EJM4-vAB7TkZSIkM3qKJK6fvlMpdjkFXtzf68LXz_kz8rT0u5PedgTOTQpELNmjFxKKI-W4Xv4fGdXRQ6kQ
-  validityInSec: 604800
+  profiles:
+    active: "dev"
+    group:
+      dev:
+        - db-dev
+        - jwt-dev
