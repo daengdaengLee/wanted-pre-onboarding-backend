@@ -111,12 +111,7 @@ public class PostController {
             Authentication authentication) {
         createPostInputDto.validate();
 
-        var authResult = Auth.create(authentication);
-        if (authResult.isEmpty()) {
-            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-        var auth = authResult.get();
-        var requestUserDto = new UserDto(auth.userId());
+        var requestUserDto = this.readRequestUserFromAuthentication(authentication);
 
         var authorDtoResult = UserDto.create(createPostInputDto.author().id());
         if (authorDtoResult.isLeft()) {
@@ -170,12 +165,7 @@ public class PostController {
             Authentication authentication) {
         updatePostInputDto.validate();
 
-        var authResult = Auth.create(authentication);
-        if (authResult.isEmpty()) {
-            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-        var auth = authResult.get();
-        var requestUserDto = new UserDto(auth.userId());
+        var requestUserDto = this.readRequestUserFromAuthentication(authentication);
 
         var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(postId, requestUserDto);
         var canUpdatePostResult = this.authorizeInboundPort.canUpdatePost(canUpdatePostInputDto);
@@ -216,12 +206,7 @@ public class PostController {
     public DeletePostOutputDto deletePost(
             @PathVariable("postId") Long postId,
             Authentication authentication) {
-        var authResult = Auth.create(authentication);
-        if (authResult.isEmpty()) {
-            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-        var auth = authResult.get();
-        var requestUserDto = new UserDto(auth.userId());
+        var requestUserDto = this.readRequestUserFromAuthentication(authentication);
 
         var canDeletePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(postId, requestUserDto);
         var canDeletePostResult = this.authorizeInboundPort.canDeletePost(canDeletePostInputDto);
@@ -257,6 +242,15 @@ public class PostController {
                         new AuthorDto(post.author().id().toString())))
                 .toList();
         return new MultiplePostOutputDto(posts, listPostResult.hasNext());
+    }
+
+    private UserDto readRequestUserFromAuthentication(Authentication authentication) {
+        var authResult = Auth.create(authentication);
+        if (authResult.isEmpty()) {
+            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        var auth = authResult.get();
+        return new UserDto(auth.userId());
     }
 
 }
