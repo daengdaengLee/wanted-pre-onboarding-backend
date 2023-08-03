@@ -193,8 +193,12 @@ public class PostController {
                     }
                     return Optional.of(canDeletePostResult.left());
                 })
-                .ifPresent(message -> {
-                    throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
+                .ifPresent(errorCode -> {
+                    if (errorCode == AuthorizeInboundPort.CanDeletePostErrorCode.ILLEGAL_AUTHOR) {
+                        throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
+                    }
+                    this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+                    throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
                 });
 
         this.deletePostInboundPort.deletePost(new DeletePostInboundPort.InputDto(postId));

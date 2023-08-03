@@ -36,6 +36,22 @@ public interface AuthorizeInboundPort {
 
     }
 
+    enum CanDeletePostErrorCode {
+
+        ILLEGAL_AUTHOR("자신이 쓴 글만 삭제할 수 있습니다.");
+
+        private final String message;
+
+        CanDeletePostErrorCode(String message) {
+            this.message = message;
+        }
+
+        public String message() {
+            return this.message;
+        }
+
+    }
+
     record CanCreatePostInputDto(CreatePostDto post, UserDto requestUser) {
     }
 
@@ -46,6 +62,6 @@ public interface AuthorizeInboundPort {
 
     Either<CanUpdatePostErrorCode, Boolean> canUpdatePost(CanUpdateOrDeletePostInputDto inputDto);
 
-    Either<String, Boolean> canDeletePost(CanUpdateOrDeletePostInputDto inputDto);
+    Either<CanDeletePostErrorCode, Boolean> canDeletePost(CanUpdateOrDeletePostInputDto inputDto);
 
 }
