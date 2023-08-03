@@ -398,3 +398,7 @@ erDiagram
 - 페이스북과 같은 무한 스크롤 형태를 가정하고 커서 기반 페이지네이션을 적용했습니다.
   - 게시글의 id 가 PK 이면서 생성한 순서대로 증가하는 값이기 때문에 id 기준 내림차순으로 페이지네이션을 구성했습니다.
 - JPA 의 정렬 및 필터 조건을 메소드 컨벤션을 통해 사용했습니다.
+
+## 데모 영상
+
+- [구글 드라이브 링크](https://drive.google.com/file/d/1yUlC_eBAhfyc5e-OGR198IDfvcj1Lxfj/view?usp=sharing)
