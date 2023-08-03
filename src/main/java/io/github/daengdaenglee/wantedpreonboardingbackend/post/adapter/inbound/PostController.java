@@ -90,8 +90,12 @@ public class PostController {
         var canCreatePostInputDto = new AuthorizeInboundPort.CanCreatePostInputDto(createPostDto, requestUserDto);
         var canCreatePostResult = this.authorizeInboundPort.canCreatePost(canCreatePostInputDto);
         if (canCreatePostResult.isLeft()) {
-            var message = canCreatePostResult.left();
-            throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
+            var errorCode = canCreatePostResult.left();
+            if (errorCode == AuthorizeInboundPort.CanCreatePostErrorCode.ILLEGAL_AUTHOR) {
+                throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
+            }
+            this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
         }
 
         var post = this.createPostInboundPort.createPost(createPostDto);
@@ -192,6 +196,10 @@ public class PostController {
         this.deletePostInboundPort.deletePost(new DeletePostInboundPort.InputDto(postId));
 
         return new DeletePostOutputDto();
+    }
+
+    @GetMapping()
+    public void listPost() {
     }
 
 }

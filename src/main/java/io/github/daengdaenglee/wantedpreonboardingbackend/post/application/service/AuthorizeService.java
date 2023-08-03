@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 public class AuthorizeService implements AuthorizeInboundPort {
 
     @Override
-    public Either<String, Boolean> canCreatePost(CanCreatePostInputDto inputDto) {
+    public Either<CanCreatePostErrorCode, Boolean> canCreatePost(CanCreatePostInputDto inputDto) {
         if (this.isSameUser(inputDto.post().author(), inputDto.requestUser())) {
             return new Either.Right<>(true);
         }
-        return new Either.Left<>("다른 사람으로 글을 쓸 수 없습니다.");
+        return new Either.Left<>(CanCreatePostErrorCode.ILLEGAL_AUTHOR);
     }
 
     @Override
