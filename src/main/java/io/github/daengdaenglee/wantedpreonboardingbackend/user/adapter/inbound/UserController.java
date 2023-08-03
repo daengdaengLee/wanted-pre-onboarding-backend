@@ -42,7 +42,7 @@ public class UserController {
 
     }
 
-    public record UserOutputDto(Long id, String email) {
+    public record UserOutputDto(String id, String email) {
     }
 
     public record SignUpOutputDto(UserOutputDto user) {
@@ -66,7 +66,9 @@ public class UserController {
             throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
         }
         var signUpOutputDto = signUpOutputDtoResult.right();
-        return new SignUpOutputDto(new UserOutputDto(signUpOutputDto.id(), signUpOutputDto.email()));
+        return new SignUpOutputDto(new UserOutputDto(
+                signUpOutputDto.id().toString(),
+                signUpOutputDto.email()));
     }
 
     public record SignInOutputDto(UserOutputDto user, String token) {
@@ -93,7 +95,7 @@ public class UserController {
         var signInOutputDto = signInOutputDtoResult.right();
         return new SignInOutputDto(
                 new UserOutputDto(
-                        signInOutputDto.user().id(),
+                        signInOutputDto.user().id().toString(),
                         signInOutputDto.user().email()),
                 signInOutputDto.token());
     }
