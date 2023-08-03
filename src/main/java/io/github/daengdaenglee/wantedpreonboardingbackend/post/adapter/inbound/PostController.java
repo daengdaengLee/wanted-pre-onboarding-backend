@@ -107,6 +107,12 @@ public class PostController {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
+        var currentPostResult = this.readPostInboundPort.readPost(
+                new ReadPostInboundPort.InputDto(postId));
+        if (currentPostResult.isEmpty()) {
+            throw new SimpleApiException(HttpStatus.NOT_FOUND, "해당 게시글이 없습니다.");
+        }
+
         throw new RuntimeException("not implemented");
     }
 
