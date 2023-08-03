@@ -25,15 +25,19 @@ public class PostController {
 
     private final UpdatePostInboundPort updatePostInboundPort;
 
+    private final DeletePostInboundPort deletePostInboundPort;
+
     public PostController(
             AuthorizeInboundPort authorizeInboundPort,
             CreatePostInboundPort createPostInboundPort,
             ReadPostInboundPort readPostInboundPort,
-            UpdatePostInboundPort updatePostInboundPort) {
+            UpdatePostInboundPort updatePostInboundPort,
+            DeletePostInboundPort deletePostInboundPort) {
         this.authorizeInboundPort = authorizeInboundPort;
         this.createPostInboundPort = createPostInboundPort;
         this.readPostInboundPort = readPostInboundPort;
         this.updatePostInboundPort = updatePostInboundPort;
+        this.deletePostInboundPort = deletePostInboundPort;
     }
 
     public record AuthorDto(String id) {
@@ -53,6 +57,12 @@ public class PostController {
     }
 
     public record SinglePostOutputDto(PostOutputDto post) {
+    }
+
+    public record DeletePostOutputDto(String message) {
+        DeletePostOutputDto() {
+            this("게시글을 삭제했습니다.");
+        }
     }
 
     @PostMapping()
@@ -156,7 +166,7 @@ public class PostController {
     }
 
     @DeleteMapping("{postId}")
-    public void deletePost(
+    public DeletePostOutputDto deletePost(
             @PathVariable("postId") Long postId,
             Authentication authentication) {
         var authResult = Auth.create(authentication);
@@ -179,7 +189,9 @@ public class PostController {
                     throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
                 });
 
-        throw new RuntimeException("not implemented");
+        this.deletePostInboundPort.deletePost(new DeletePostInboundPort.InputDto(postId));
+
+        return new DeletePostOutputDto();
     }
 
 }
