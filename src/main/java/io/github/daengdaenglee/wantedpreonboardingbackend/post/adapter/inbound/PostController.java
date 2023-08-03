@@ -2,10 +2,7 @@ package io.github.daengdaenglee.wantedpreonboardingbackend.post.adapter.inbound;
 
 import io.github.daengdaenglee.wantedpreonboardingbackend.auth.Auth;
 import io.github.daengdaenglee.wantedpreonboardingbackend.common.SimpleApiException;
-import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.AuthorizeInboundPort;
-import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.CreatePostDto;
-import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.CreatePostInboundPort;
-import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.UserDto;
+import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +15,15 @@ public class PostController {
 
     private final CreatePostInboundPort createPostInboundPort;
 
+    private final ReadPostInboundPort readPostInboundPort;
+
     public PostController(
             AuthorizeInboundPort authorizeInboundPort,
-            CreatePostInboundPort createPostInboundPort
-    ) {
+            CreatePostInboundPort createPostInboundPort,
+            ReadPostInboundPort readPostInboundPort) {
         this.authorizeInboundPort = authorizeInboundPort;
         this.createPostInboundPort = createPostInboundPort;
+        this.readPostInboundPort = readPostInboundPort;
     }
 
     public record AuthorDto(String id) {
@@ -88,7 +88,17 @@ public class PostController {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        throw new RuntimeException("not implemented");
+        var postResult = this.readPostInboundPort.readPost(
+                new ReadPostInboundPort.InputDto(postId));
+        if (postResult.isEmpty()) {
+            throw new SimpleApiException(HttpStatus.NOT_FOUND, "해당 게시글이 없습니다.");
+        }
+        var post = postResult.get();
+        return new SinglePostOutputDto(new PostOutputDto(
+                post.id().toString(),
+                post.title(),
+                post.content(),
+                new AuthorDto(post.author().id().toString())));
     }
 
 }
