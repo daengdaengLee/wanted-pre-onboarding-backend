@@ -83,14 +83,7 @@ public class PostController {
     }
 
     @GetMapping("{postId}")
-    public SinglePostOutputDto readPost(
-            @PathVariable("postId") Long postId,
-            Authentication authentication) {
-        var authResult = Auth.create(authentication);
-        if (authResult.isEmpty()) {
-            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-
+    public SinglePostOutputDto readPost(@PathVariable("postId") Long postId) {
         var postResult = this.readPostInboundPort.readPost(
                 new ReadPostInboundPort.InputDto(postId));
         if (postResult.isEmpty()) {
