@@ -3,6 +3,8 @@ package io.github.daengdaenglee.wantedpreonboardingbackend.post.adapter.inbound;
 import io.github.daengdaenglee.wantedpreonboardingbackend.auth.Auth;
 import io.github.daengdaenglee.wantedpreonboardingbackend.common.SimpleApiException;
 import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -11,19 +13,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("posts")
 public class PostController {
 
+    private final Logger logger = LoggerFactory.getLogger(PostController.class);
+
     private final AuthorizeInboundPort authorizeInboundPort;
 
     private final CreatePostInboundPort createPostInboundPort;
 
     private final ReadPostInboundPort readPostInboundPort;
 
+    private final UpdatePostInboundPort updatePostInboundPort;
+
     public PostController(
             AuthorizeInboundPort authorizeInboundPort,
             CreatePostInboundPort createPostInboundPort,
-            ReadPostInboundPort readPostInboundPort) {
+            ReadPostInboundPort readPostInboundPort,
+            UpdatePostInboundPort updatePostInboundPort) {
         this.authorizeInboundPort = authorizeInboundPort;
         this.createPostInboundPort = createPostInboundPort;
         this.readPostInboundPort = readPostInboundPort;
+        this.updatePostInboundPort = updatePostInboundPort;
     }
 
     public record AuthorDto(String id) {
@@ -123,7 +131,26 @@ public class PostController {
             throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
         }
 
-        throw new RuntimeException("not implemented");
+        var updatedPostResult = this.updatePostInboundPort.updatePost(
+                new UpdatePostInboundPort.UpdatePostDto(
+                        postId,
+                        updatePostInputDto.title(),
+                        updatePostInputDto.content()));
+        if (updatedPostResult.isLeft()) {
+            var errorCode = updatedPostResult.left();
+            if (errorCode == UpdatePostInboundPort.ErrorCode.NOT_EXIST) {
+                throw new SimpleApiException(HttpStatus.NOT_FOUND, errorCode.message());
+            }
+            this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
+        }
+        var updatedPost = updatedPostResult.right();
+
+        return new SinglePostOutputDto(new PostOutputDto(
+                updatedPost.id().toString(),
+                updatedPost.title(),
+                updatedPost.content(),
+                new AuthorDto(updatedPost.author().id().toString())));
     }
 
 }
