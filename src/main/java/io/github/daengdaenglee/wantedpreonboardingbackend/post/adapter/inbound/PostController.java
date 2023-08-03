@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("posts")
 public class PostController {
@@ -133,19 +131,14 @@ public class PostController {
         var auth = authResult.get();
         var requestUserDto = new UserDto(auth.userId());
 
-        var currentPostResult = this.readPostInboundPort.readPost(
-                new ReadPostInboundPort.InputDto(postId));
-        if (currentPostResult.isEmpty()) {
-            throw new SimpleApiException(HttpStatus.NOT_FOUND, "해당 게시글이 없습니다.");
-        }
-        var currentPost = currentPostResult.get();
-
-        var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(currentPost, requestUserDto);
+        var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(postId, requestUserDto);
         var canUpdatePostResult = this.authorizeInboundPort.canUpdatePost(canUpdatePostInputDto);
         if (canUpdatePostResult.isLeft()) {
             var errorCode = canUpdatePostResult.left();
             if (errorCode == AuthorizeInboundPort.CanUpdatePostErrorCode.ILLEGAL_AUTHOR) {
                 throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
+            } else if (errorCode == AuthorizeInboundPort.CanUpdatePostErrorCode.NOT_EXIST) {
+                throw new SimpleApiException(HttpStatus.NOT_FOUND, errorCode.message());
             }
             this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
             throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
@@ -184,22 +177,18 @@ public class PostController {
         var auth = authResult.get();
         var requestUserDto = new UserDto(auth.userId());
 
-        this.readPostInboundPort.readPost(new ReadPostInboundPort.InputDto(postId))
-                .map(currentPost -> new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(currentPost, requestUserDto))
-                .map(this.authorizeInboundPort::canDeletePost)
-                .flatMap(canDeletePostResult -> {
-                    if (canDeletePostResult.isRight()) {
-                        return Optional.empty();
-                    }
-                    return Optional.of(canDeletePostResult.left());
-                })
-                .ifPresent(errorCode -> {
-                    if (errorCode == AuthorizeInboundPort.CanDeletePostErrorCode.ILLEGAL_AUTHOR) {
-                        throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
-                    }
-                    this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
-                    throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
-                });
+        var canDeletePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(postId, requestUserDto);
+        var canDeletePostResult = this.authorizeInboundPort.canDeletePost(canDeletePostInputDto);
+        if (canDeletePostResult.isLeft()) {
+            var errorCode = canDeletePostResult.left();
+            if (errorCode == AuthorizeInboundPort.CanDeletePostErrorCode.ILLEGAL_AUTHOR) {
+                throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
+            } else if (errorCode == AuthorizeInboundPort.CanDeletePostErrorCode.NOT_EXIST) {
+                return new DeletePostOutputDto();
+            }
+            this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
+        }
 
         this.deletePostInboundPort.deletePost(new DeletePostInboundPort.InputDto(postId));
 

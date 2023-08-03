@@ -22,7 +22,9 @@ public interface AuthorizeInboundPort {
 
     enum CanUpdatePostErrorCode {
 
-        ILLEGAL_AUTHOR("자신이 쓴 글만 수정할 수 있습니다.");
+        ILLEGAL_AUTHOR("자신이 쓴 글만 수정할 수 있습니다."),
+
+        NOT_EXIST("해당 게시글이 없습니다.");
 
         private final String message;
 
@@ -38,7 +40,8 @@ public interface AuthorizeInboundPort {
 
     enum CanDeletePostErrorCode {
 
-        ILLEGAL_AUTHOR("자신이 쓴 글만 삭제할 수 있습니다.");
+        ILLEGAL_AUTHOR("자신이 쓴 글만 삭제할 수 있습니다."),
+        NOT_EXIST("해당 게시글이 없습니다.");
 
         private final String message;
 
@@ -55,7 +58,7 @@ public interface AuthorizeInboundPort {
     record CanCreatePostInputDto(CreatePostDto post, UserDto requestUser) {
     }
 
-    record CanUpdateOrDeletePostInputDto(PostDto post, UserDto requestUser) {
+    record CanUpdateOrDeletePostInputDto(Long postId, UserDto requestUser) {
     }
 
     Either<CanCreatePostErrorCode, Boolean> canCreatePost(CanCreatePostInputDto inputDto);
