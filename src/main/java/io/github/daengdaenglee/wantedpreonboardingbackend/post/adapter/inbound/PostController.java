@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("posts")
@@ -27,17 +28,21 @@ public class PostController {
 
     private final DeletePostInboundPort deletePostInboundPort;
 
+    private final ListPostInboundPort listPostInboundPort;
+
     public PostController(
             AuthorizeInboundPort authorizeInboundPort,
             CreatePostInboundPort createPostInboundPort,
             ReadPostInboundPort readPostInboundPort,
             UpdatePostInboundPort updatePostInboundPort,
-            DeletePostInboundPort deletePostInboundPort) {
+            DeletePostInboundPort deletePostInboundPort,
+            ListPostInboundPort listPostInboundPort) {
         this.authorizeInboundPort = authorizeInboundPort;
         this.createPostInboundPort = createPostInboundPort;
         this.readPostInboundPort = readPostInboundPort;
         this.updatePostInboundPort = updatePostInboundPort;
         this.deletePostInboundPort = deletePostInboundPort;
+        this.listPostInboundPort = listPostInboundPort;
     }
 
     public record AuthorDto(String id) {
@@ -203,8 +208,19 @@ public class PostController {
     @GetMapping()
     public MultiplePostOutputDto listPost(
             @RequestParam(required = false, value = "cursor") Long cursor,
-            @RequestParam(required = false, value = "count", defaultValue = "10") Long count) {
-        throw new SimpleApiException(HttpStatus.NOT_IMPLEMENTED, "아직 개발중입니다.");
+            @RequestParam(required = false, value = "count", defaultValue = "10") Integer count) {
+        var listPostResult = this.listPostInboundPort.listPost(
+                new ListPostInboundPort.InputDto(Optional.ofNullable(cursor), count));
+        var posts = listPostResult
+                .posts()
+                .stream()
+                .map(post -> new PostOutputDto(
+                        post.id().toString(),
+                        post.title(),
+                        post.content(),
+                        new AuthorDto(post.author().id().toString())))
+                .toList();
+        return new MultiplePostOutputDto(posts, listPostResult.hasNext());
     }
 
 }
