@@ -143,8 +143,12 @@ public class PostController {
         var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(currentPost, requestUserDto);
         var canUpdatePostResult = this.authorizeInboundPort.canUpdatePost(canUpdatePostInputDto);
         if (canUpdatePostResult.isLeft()) {
-            var message = canUpdatePostResult.left();
-            throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
+            var errorCode = canUpdatePostResult.left();
+            if (errorCode == AuthorizeInboundPort.CanUpdatePostErrorCode.ILLEGAL_AUTHOR) {
+                throw new SimpleApiException(HttpStatus.FORBIDDEN, errorCode.message());
+            }
+            this.logger.warn("{} 에러 코드 처리가 없습니다.", errorCode);
+            throw new SimpleApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorCode.message());
         }
 
         var updatedPostResult = this.updatePostInboundPort.updatePost(
