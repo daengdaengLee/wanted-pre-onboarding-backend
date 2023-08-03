@@ -46,12 +46,44 @@ public class PostController {
     }
 
     public record AuthorDto(String id) {
+
+        public void validate() {
+            if (this.id() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "작성자 아이디가 없습니다.");
+            }
+        }
+
     }
 
     public record CreatePostInputDto(String title, String content, AuthorDto author) {
+
+        public void validate() {
+            if (this.title() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "게시글 제목이 없습니다.");
+            }
+            if (this.content() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "게시글 내용이 없습니다.");
+            }
+            var author = this.author();
+            if (author == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "게시글 작성자가 없습니다.");
+            }
+            author.validate();
+        }
+
     }
 
     public record UpdatePostInputDto(String title, String content) {
+
+        public void validate() {
+            if (this.title() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "게시글 제목이 없습니다.");
+            }
+            if (this.content() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "게시글 내용이 없습니다.");
+            }
+        }
+
     }
 
     public record PostOutputDto(
@@ -77,6 +109,8 @@ public class PostController {
     public SinglePostOutputDto createPost(
             @RequestBody CreatePostInputDto createPostInputDto,
             Authentication authentication) {
+        createPostInputDto.validate();
+
         var authResult = Auth.create(authentication);
         if (authResult.isEmpty()) {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
@@ -134,6 +168,8 @@ public class PostController {
             @PathVariable("postId") Long postId,
             @RequestBody UpdatePostInputDto updatePostInputDto,
             Authentication authentication) {
+        updatePostInputDto.validate();
+
         var authResult = Auth.create(authentication);
         if (authResult.isEmpty()) {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");

@@ -29,6 +29,17 @@ public class UserController {
     }
 
     public record AuthInputDto(String email, String password) {
+
+        public void validate() {
+            if (this.email() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "이메일 주소를 입력해주세요.");
+            }
+
+            if (this.password() == null) {
+                throw new SimpleApiException(HttpStatus.BAD_REQUEST, "비밀번호를 입력해주세요.");
+            }
+        }
+
     }
 
     public record UserOutputDto(Long id, String email) {
@@ -39,6 +50,8 @@ public class UserController {
 
     @PostMapping("sign-up")
     public SignUpOutputDto signUp(@RequestBody AuthInputDto authInputDto) {
+        authInputDto.validate();
+
         var signUpInputDto = new SignUpInboundPort.InputDto(authInputDto.email(), authInputDto.password());
         var signUpOutputDtoResult = this.signUpInboundPort.signUp(signUpInputDto);
         if (signUpOutputDtoResult.isLeft()) {
@@ -61,6 +74,8 @@ public class UserController {
 
     @PostMapping("sign-in")
     public SignInOutputDto signIn(@RequestBody AuthInputDto authInputDto) {
+        authInputDto.validate();
+
         var signInInputDto = new SignInInboundPort.InputDto(authInputDto.email(), authInputDto.password());
         var signInOutputDtoResult = this.signInInboundPort.signIn(signInInputDto);
         if (signInOutputDtoResult.isLeft()) {
