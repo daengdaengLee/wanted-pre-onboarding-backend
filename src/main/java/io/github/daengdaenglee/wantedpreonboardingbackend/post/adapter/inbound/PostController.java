@@ -102,6 +102,11 @@ public class PostController {
             @PathVariable("postId") Long postId,
             @RequestBody UpdatePostInputDto updatePostInputDto,
             Authentication authentication) {
+        var authResult = Auth.create(authentication);
+        if (authResult.isEmpty()) {
+            throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
         throw new RuntimeException("not implemented");
     }
 
