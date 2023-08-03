@@ -32,6 +32,9 @@ public class PostController {
     public record CreatePostInputDto(String title, String content, AuthorDto author) {
     }
 
+    public record UpdatePostInputDto(String title, String content) {
+    }
+
     public record PostOutputDto(
             String id,
             String title,
@@ -99,6 +102,14 @@ public class PostController {
                 post.title(),
                 post.content(),
                 new AuthorDto(post.author().id().toString())));
+    }
+
+    @PutMapping("{postId}")
+    public SinglePostOutputDto updatePost(
+            @PathVariable("postId") Long postId,
+            @RequestBody UpdatePostInputDto updatePostInputDto,
+            Authentication authentication) {
+        throw new RuntimeException("not implemented");
     }
 
 }
