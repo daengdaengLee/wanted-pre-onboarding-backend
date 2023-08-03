@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("posts")
 public class PostController {
@@ -55,6 +57,9 @@ public class PostController {
     }
 
     public record SinglePostOutputDto(PostOutputDto post) {
+    }
+
+    public record MultiplePostOutputDto(List<PostOutputDto> posts, Boolean hasNext) {
     }
 
     public record DeletePostOutputDto(String message) {
@@ -196,7 +201,10 @@ public class PostController {
     }
 
     @GetMapping()
-    public void listPost() {
+    public MultiplePostOutputDto listPost(
+            @RequestParam(required = false, value = "cursor") Long cursor,
+            @RequestParam(required = false, value = "count", defaultValue = "10") Long count) {
+        throw new SimpleApiException(HttpStatus.NOT_IMPLEMENTED, "아직 개발중입니다.");
     }
 
 }
