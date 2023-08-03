@@ -7,6 +7,11 @@ public interface AuthorizeInboundPort {
     record CanCreatePostInputDto(CreatePostDto post, UserDto requestUser) {
     }
 
+    record CanUpdatePostInputDto(PostDto post, UserDto requestUser) {
+    }
+
     Either<String, Boolean> canCreatePost(CanCreatePostInputDto inputDto);
+
+    Either<String, Boolean> canUpdatePost(CanUpdatePostInputDto inputDto);
 
 }

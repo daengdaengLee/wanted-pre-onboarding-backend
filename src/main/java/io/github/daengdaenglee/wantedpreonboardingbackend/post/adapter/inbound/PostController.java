@@ -106,11 +106,21 @@ public class PostController {
         if (authResult.isEmpty()) {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
+        var auth = authResult.get();
+        var requestUserDto = new UserDto(auth.userId());
 
         var currentPostResult = this.readPostInboundPort.readPost(
                 new ReadPostInboundPort.InputDto(postId));
         if (currentPostResult.isEmpty()) {
             throw new SimpleApiException(HttpStatus.NOT_FOUND, "해당 게시글이 없습니다.");
+        }
+        var currentPost = currentPostResult.get();
+
+        var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdatePostInputDto(currentPost, requestUserDto);
+        var canUpdatePostResult = this.authorizeInboundPort.canUpdatePost(canUpdatePostInputDto);
+        if (canUpdatePostResult.isLeft()) {
+            var message = canUpdatePostResult.left();
+            throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
         }
 
         throw new RuntimeException("not implemented");
