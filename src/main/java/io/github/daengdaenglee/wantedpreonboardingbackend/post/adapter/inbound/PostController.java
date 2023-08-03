@@ -8,10 +8,7 @@ import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbou
 import io.github.daengdaenglee.wantedpreonboardingbackend.post.application.inbound.UserDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("posts")
@@ -42,11 +39,11 @@ public class PostController {
             AuthorDto author) {
     }
 
-    public record CreatePostOutputDto(PostOutputDto post) {
+    public record SinglePostOutputDto(PostOutputDto post) {
     }
 
     @PostMapping()
-    public CreatePostOutputDto createPost(
+    public SinglePostOutputDto createPost(
             @RequestBody CreatePostInputDto createPostInputDto,
             Authentication authentication) {
         var authResult = Auth.create(authentication);
@@ -75,11 +72,18 @@ public class PostController {
         }
 
         var post = this.createPostInboundPort.createPost(createPostDto);
-        return new CreatePostOutputDto(new PostOutputDto(
+        return new SinglePostOutputDto(new PostOutputDto(
                 post.id().toString(),
                 post.title(),
                 post.content(),
                 new AuthorDto(post.author().id().toString())));
+    }
+
+    @GetMapping("{postId}")
+    public SinglePostOutputDto readPost(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+        throw new RuntimeException("not implemented");
     }
 
 }
