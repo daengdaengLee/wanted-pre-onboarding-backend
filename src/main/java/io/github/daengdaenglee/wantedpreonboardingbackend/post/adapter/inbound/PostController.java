@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("posts")
 public class PostController {
@@ -124,7 +126,7 @@ public class PostController {
         }
         var currentPost = currentPostResult.get();
 
-        var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdatePostInputDto(currentPost, requestUserDto);
+        var canUpdatePostInputDto = new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(currentPost, requestUserDto);
         var canUpdatePostResult = this.authorizeInboundPort.canUpdatePost(canUpdatePostInputDto);
         if (canUpdatePostResult.isLeft()) {
             var message = canUpdatePostResult.left();
@@ -161,6 +163,21 @@ public class PostController {
         if (authResult.isEmpty()) {
             throw new SimpleApiException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
+        var auth = authResult.get();
+        var requestUserDto = new UserDto(auth.userId());
+
+        this.readPostInboundPort.readPost(new ReadPostInboundPort.InputDto(postId))
+                .map(currentPost -> new AuthorizeInboundPort.CanUpdateOrDeletePostInputDto(currentPost, requestUserDto))
+                .map(this.authorizeInboundPort::canDeletePost)
+                .flatMap(canDeletePostResult -> {
+                    if (canDeletePostResult.isRight()) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(canDeletePostResult.left());
+                })
+                .ifPresent(message -> {
+                    throw new SimpleApiException(HttpStatus.FORBIDDEN, message);
+                });
 
         throw new RuntimeException("not implemented");
     }

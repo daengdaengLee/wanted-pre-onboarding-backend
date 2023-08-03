@@ -17,11 +17,19 @@ public class AuthorizeService implements AuthorizeInboundPort {
     }
 
     @Override
-    public Either<String, Boolean> canUpdatePost(CanUpdatePostInputDto inputDto) {
+    public Either<String, Boolean> canUpdatePost(CanUpdateOrDeletePostInputDto inputDto) {
         if (this.isSameUser(inputDto.post().author(), inputDto.requestUser())) {
             return new Either.Right<>(true);
         }
         return new Either.Left<>("자신이 쓴 글만 수정할 수 있습니다.");
+    }
+
+    @Override
+    public Either<String, Boolean> canDeletePost(CanUpdateOrDeletePostInputDto inputDto) {
+        if (this.isSameUser(inputDto.post().author(), inputDto.requestUser())) {
+            return new Either.Right<>(true);
+        }
+        return new Either.Left<>("자신이 쓴 글만 지울 수 있습니다.");
     }
 
     private boolean isSameUser(UserDto user1, UserDto user2) {
