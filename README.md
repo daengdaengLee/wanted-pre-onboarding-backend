@@ -356,3 +356,21 @@ API 실행을 위해 cURL 이 필요합니다.
   ```shell
   curl --location 'http://localhost:8080/posts'
   ```
+
+## 데이터베이스 테이블 구조
+
+```mermaid
+erDiagram
+    user {
+        bigint id "PK"
+        varchar(255) email
+        varchar(255) password
+    }
+    post {
+        bigint id "PK"
+        varchar(255) title
+        varchar(255) content
+        bigint author_id "FK -> user.id"
+    }
+    user ||--o| post : contains
+```
