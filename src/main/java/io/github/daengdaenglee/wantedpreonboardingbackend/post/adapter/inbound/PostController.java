@@ -153,4 +153,11 @@ public class PostController {
                 new AuthorDto(updatedPost.author().id().toString())));
     }
 
+    @DeleteMapping("{postId}")
+    public void deletePost(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+        throw new RuntimeException("not implemented");
+    }
+
 }
