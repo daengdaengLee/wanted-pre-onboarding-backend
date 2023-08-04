@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -21,16 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 class SignUpServiceTest {
 
-    @Mock
     private EncodePasswordOutboundPort mockEncodePasswordOutboundPort;
 
-    @Mock
     private UserRepository mockUserRepository;
 
     private SignUpService signUpService;
 
     @BeforeEach
     void beforeEach() {
+        this.mockEncodePasswordOutboundPort = Mockito.mock(EncodePasswordOutboundPort.class);
+        this.mockUserRepository = Mockito.mock(UserRepository.class);
         this.signUpService = new SignUpService(
                 this.mockEncodePasswordOutboundPort,
                 this.mockUserRepository);
