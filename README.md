@@ -1,6 +1,7 @@
 # wanted-pre-onboarding-backend
 
-developed by 이건호
+- developed by 이건호
+- [과제 설명 저장소](https://github.com/lordmyshepherd-edu/wanted-pre-onboardung-backend-selection-assignment)
 
 ## 애플리케이션 실행
 
@@ -402,3 +403,4 @@ erDiagram
 ## 데모 영상
 
 - [구글 드라이브 링크](https://drive.google.com/file/d/1yUlC_eBAhfyc5e-OGR198IDfvcj1Lxfj/view?usp=sharing)
+
